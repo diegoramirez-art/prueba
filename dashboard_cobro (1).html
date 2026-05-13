@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Cobro 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0e0e0e;
+    --ink-2: #3a3a3a;
+    --ink-3: #7a7a7a;
+    --paper: #f5f2eb;
+    --paper-2: #ede9df;
+    --paper-3: #e2ddd2;
+    --accent: #c94e2e;
+    --accent-2: #e8a020;
+    --blue: #1e4fa8;
+    --green: #1a7a50;
+    --border: rgba(14,14,14,0.12);
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2.5rem 3rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 2rem;
+  }
+  .header-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+    margin-bottom: 0.5rem;
+  }
+  .header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.05;
+    color: var(--paper);
+    font-weight: 400;
+  }
+  .header h1 em {
+    color: var(--accent-2);
+    font-style: italic;
+  }
+  .header-meta {
+    text-align: right;
+  }
+  .header-meta .big-date {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--paper);
+    font-weight: 400;
+    line-height: 1;
+  }
+  .header-meta .sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    font-family: var(--font-mono);
+  }
+  .tag-cobro {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-top: 0.75rem;
+  }
+
+  /* ── MAIN GRID ── */
+  .main { padding: 2.5rem 3rem; display: flex; flex-direction: column; gap: 2rem; }
+
+  /* ── HERO ROW — tarjeta cobros + KPIs ── */
+  .hero-row {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+
+  /* tarjeta principal cobros */
+  .cobro-card {
+    background: var(--accent);
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .cobro-card::before {
+    content: '';
+    position: absolute;
+    right: -30px; bottom: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .cobro-card::after {
+    content: '';
+    position: absolute;
+    right: 20px; top: -40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .cobro-card .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+  }
+  .cobro-card .number {
+    font-family: var(--font-display);
+    font-size: 5.5rem;
+    line-height: 1;
+    color: #fff;
+    margin: 0.5rem 0 0.25rem;
+  }
+  .cobro-card .sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+  }
+  .cobro-card .pct-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-top: 1.5rem;
+  }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .kpi {
+    background: var(--paper-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .kpi .kpi-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .kpi .kpi-val {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    line-height: 1;
+    margin-top: 0.5rem;
+  }
+  .kpi .kpi-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 4px;
+  }
+  .kpi.danger .kpi-val { color: var(--accent); }
+  .kpi.warn .kpi-val { color: var(--accent-2); }
+  .kpi.good .kpi-val { color: var(--green); }
+
+  /* ── CHARTS ROW ── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+  }
+  .chart-card {
+    background: var(--paper-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+  .chart-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.25rem;
+  }
+  .chart-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 400;
+  }
+  .chart-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── BOTTOM ROW ── */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Bar lists */
+  .bar-list { display: flex; flex-direction: column; gap: 10px; }
+  .bar-item { display: flex; flex-direction: column; gap: 4px; }
+  .bar-item-header { display: flex; justify-content: space-between; font-size: 12px; }
+  .bar-item-name { color: var(--ink-2); }
+  .bar-item-val { font-family: var(--font-mono); font-weight: 500; color: var(--ink); }
+  .bar-track {
+    height: 5px; background: var(--paper-3); border-radius: 99px; overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 99px; }
+
+  /* Donut legend */
+  .donut-container { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .donut-wrap { position: relative; width: 140px; height: 140px; }
+  .donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .donut-center .dc-num {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .donut-center .dc-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .donut-legend { width: 100%; }
+  .dl-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+  .dl-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .dl-name { color: var(--ink-2); flex: 1; }
+  .dl-val { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+
+  /* Alert banner */
+  .alert-banner {
+    background: #fff7ed;
+    border: 1px solid #f4a553;
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .alert-dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+  .alert-text { flex: 1; }
+  .alert-title { font-size: 13px; font-weight: 500; color: var(--accent); margin-bottom: 2px; }
+  .alert-desc { font-size: 12px; color: var(--ink-2); }
+  .alert-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 1.5rem 3rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .footer-right {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.5s ease forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+  .hero-row { animation-delay: 0.05s; }
+  .charts-row { animation-delay: 0.15s; }
+  .bottom-row { animation-delay: 0.25s; }
+  .alert-banner { animation-delay: 0.3s; }
+
+  @media (max-width: 900px) {
+    .header { padding: 2rem 1.5rem 1.5rem; grid-template-columns: 1fr; }
+    .header-meta { text-align: left; }
+    .main { padding: 1.5rem; }
+    .hero-row, .charts-row, .bottom-row { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <p class="header-eyebrow">Soporte técnico · Reporte operacional</p>
+    <h1>Tickets de<br><em>Cobro</em> 2025</h1>
+    <span class="tag-cobro">etiqueta: cobro</span>
+  </div>
+  <div class="header-meta">
+    <p class="big-date">Ene–Dic<br>2025</p>
+    <p class="sub">Generado 13 may 2026</p>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Ticket abierto -->
+  <div class="alert-banner fade-in">
+    <div class="alert-dot"></div>
+    <div class="alert-text">
+      <p class="alert-title">Ticket abierto — acción requerida</p>
+      <p class="alert-desc">#28077 · PF Planta 4 Proyecto Ampliación Instalación CCTV · Agente: Emanuel Flores · Activo: 91h 31min · <strong>Fecha de vencimiento: 31 mar 2026 — vencido</strong></p>
+    </div>
+    <span class="alert-badge">OPEN</span>
+  </div>
+
+  <!-- Hero: cobros + KPIs -->
+  <div class="hero-row fade-in">
+    <div class="cobro-card">
+      <div>
+        <p class="label">Total tickets cobro</p>
+        <p class="number">352</p>
+        <p class="sub">de 12.392 tickets totales</p>
+      </div>
+      <div>
+        <p class="pct-pill">2.8% del total</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:1fr; grid-template-rows:1fr;">
+      <div class="kpi good">
+        <p class="kpi-label">Cerrados</p>
+        <p class="kpi-val">351</p>
+        <p class="kpi-sub">99.7% resueltos</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tendencia mensual -->
+  <div class="fade-in">
+    <div class="chart-card">
+      <div class="card-header">
+        <h2 class="chart-title">Tickets por mes</h2>
+        <span class="chart-sub">Ene – Dic 2025</span>
+      </div>
+      <div style="position:relative; height:200px;">
+        <canvas id="monthlyChart" role="img" aria-label="Tendencia mensual de tickets de cobro 2025">
+          Ene:23 Feb:27 Mar:34 Abr:45 May:23 Jun:18 Jul:23 Ago:27 Sep:35 Oct:45 Nov:36 Dic:16
+        </canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top empresas, agentes, tipo trabajo -->
+  <div class="bottom-row fade-in">
+
+    <div class="chart-card">
+      <div class="card-header">
+        <h2 class="chart-title">Top empresas</h2>
+        <span class="chart-sub">Por volumen</span>
+      </div>
+      <div class="bar-list">
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">P.F</span><span class="bar-item-val">225</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%; background:#1e4fa8"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Mall Plaza Maule</span><span class="bar-item-val">31</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:14%; background:#1e4fa8"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Santa Fidelmira</span><span class="bar-item-val">9</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:4%; background:#1e4fa8"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Gerencia P.F</span><span class="bar-item-val">7</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:3.1%; background:#1e4fa8"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Col. Montessori</span><span class="bar-item-val">7</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:3.1%; background:#1e4fa8"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Municipalidad Talca</span><span class="bar-item-val">6</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:2.7%; background:#1e4fa8"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">TPL</span><span class="bar-item-val">6</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:2.7%; background:#1e4fa8"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <h2 class="chart-title">Top agentes</h2>
+        <span class="chart-sub">Tickets gestionados</span>
+      </div>
+      <div class="bar-list">
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Emanuel Flores</span><span class="bar-item-val">257</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%; background:#1a7a50"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">David Castillo</span><span class="bar-item-val">62</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:24%; background:#1a7a50"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Juan Toledo</span><span class="bar-item-val">9</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:3.5%; background:#1a7a50"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">Diego Franquiz</span><span class="bar-item-val">8</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:3.1%; background:#1a7a50"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-item-header"><span class="bar-item-name">William Padron</span><span class="bar-item-val">7</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:2.7%; background:#1a7a50"></div></div>
+        </div>
+      </div>
+      <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border);">
+        <p style="font-family:var(--font-mono); font-size:10px; color:var(--ink-3); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.5rem;">Grupos</p>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span style="background:var(--paper-3); font-size:11px; padding:3px 8px; border-radius:2px;">CCTV — 259</span>
+          <span style="background:var(--paper-3); font-size:11px; padding:3px 8px; border-radius:2px;">Informática — 67</span>
+          <span style="background:var(--paper-3); font-size:11px; padding:3px 8px; border-radius:2px;">CCTV P.F. — 13</span>
+          <span style="background:var(--paper-3); font-size:11px; padding:3px 8px; border-radius:2px;">Electricidad — 10</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <h2 class="chart-title">Tipo de trabajo</h2>
+        <span class="chart-sub">Distribución</span>
+      </div>
+      <div style="position:relative; height:180px; margin-bottom:0.75rem;">
+        <canvas id="tipoChart" role="img" aria-label="Tipo de trabajo: Mant. Correctiva 175, Instalación 137, Mant. Preventiva 15, Configuración 6, Desinstalación 1">Mant. Correctiva: 175, Instalación: 137, Mant. Preventiva: 15, Configuración: 6, Desinstalación: 1</canvas>
+      </div>
+      <div class="donut-legend">
+        <div class="dl-row"><span class="dl-dot" style="background:#c94e2e"></span><span class="dl-name">Mant. Correctiva</span><span class="dl-val">175</span></div>
+        <div class="dl-row"><span class="dl-dot" style="background:#1e4fa8"></span><span class="dl-name">Instalación</span><span class="dl-val">137</span></div>
+        <div class="dl-row"><span class="dl-dot" style="background:#e8a020"></span><span class="dl-name">Mant. Preventiva</span><span class="dl-val">15</span></div>
+        <div class="dl-row"><span class="dl-dot" style="background:#1a7a50"></span><span class="dl-name">Configuración</span><span class="dl-val">6</span></div>
+        <div class="dl-row"><span class="dl-dot" style="background:#b4b2a9"></span><span class="dl-name">Desinstalación</span><span class="dl-val">1</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pestaña desplegable tickets -->
+  <div style="padding: 0 3rem 2rem;" class="fade-in">
+    <button id="ticketToggle" onclick="toggleTickets()" style="
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    ">
+      <span style="display:flex; align-items:center; gap:10px;">
+        <span style="font-family:var(--font-mono); font-size:11px; background:var(--accent); color:#fff; padding:2px 10px; border-radius:2px; letter-spacing:0.06em;">352</span>
+        Listado completo de tickets con etiqueta Cobro
+      </span>
+      <span id="ticketArrow" style="font-size:18px; transition:transform 0.3s; display:inline-block;">▾</span>
+    </button>
+
+    <div id="ticketPanel" style="display:none; margin-top: 1px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; overflow: hidden;">
+
+      <!-- Barra de búsqueda y filtros -->
+      <div style="background: var(--paper-2); padding: 0.875rem 1.25rem; display:flex; gap:10px; align-items:center; flex-wrap:wrap; border-bottom: 1px solid var(--border);">
+        <input id="searchInput" type="text" placeholder="Buscar por ID, asunto o empresa…" oninput="filterTickets()"
+          style="flex:1; min-width:200px; padding:6px 12px; border:1px solid var(--border); border-radius:6px; background:var(--paper); font-family:var(--font-body); font-size:13px; color:var(--ink); outline:none;">
+        <select id="filterEstado" onchange="filterTickets()"
+          style="padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--paper); font-family:var(--font-mono); font-size:12px; color:var(--ink); cursor:pointer;">
+          <option value="">Todos los estados</option>
+          <option value="Open">Open</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <select id="filterGrupo" onchange="filterTickets()"
+          style="padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--paper); font-family:var(--font-mono); font-size:12px; color:var(--ink); cursor:pointer;">
+          <option value="">Todos los grupos</option>
+          <option value="CCTV">CCTV</option>
+          <option value="Informática">Informática</option>
+          <option value="CCTV P.F (tecnico)">CCTV P.F (técnico)</option>
+          <option value="Electricidad">Electricidad</option>
+        </select>
+        <span id="resultCount" style="font-family:var(--font-mono); font-size:11px; color:var(--ink-3); white-space:nowrap;">352 resultados</span>
+      </div>
+
+      <!-- Tabla -->
+      <div style="overflow-x:auto; max-height: 480px; overflow-y:auto;">
+        <table id="ticketTable" style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr style="background:var(--paper-3); position:sticky; top:0; z-index:1;">
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2); white-space:nowrap; cursor:pointer;" onclick="sortTable('id')">ID ↕</th>
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2);">Asunto</th>
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2); white-space:nowrap;">Estado</th>
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2); white-space:nowrap;">Empresa</th>
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2); white-space:nowrap;">Agente</th>
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2); white-space:nowrap;">Grupo</th>
+              <th style="padding:10px 14px; text-align:left; font-family:var(--font-mono); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase; color:var(--ink-2); white-space:nowrap; cursor:pointer;" onclick="sortTable('fecha')">Fecha ↕</th>
+            </tr>
+          </thead>
+          <tbody id="ticketBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <span class="footer-left">Datos: data_ticket.xlsx · 12.392 tickets · 352 con etiqueta Cobro</span>
+  <span class="footer-right">Generado 13 May 2026</span>
+</footer>
+
+<script>
+  /* Monthly bar chart */
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+      datasets: [{
+        data: [23,27,34,45,23,18,23,27,35,45,36,16],
+        backgroundColor: (ctx) => {
+          const v = ctx.raw;
+          return v === 45 ? '#c94e2e' : '#1e4fa8';
+        },
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.raw} tickets` } } },
+      scales: {
+        x: { ticks: { color: '#7a7a7a', font: { size: 11, family: 'DM Mono' } }, grid: { display: false }, border: { display: false } },
+        y: { ticks: { color: '#7a7a7a', font: { size: 11, family: 'DM Mono' }, stepSize: 10 }, grid: { color: 'rgba(14,14,14,0.06)' }, border: { display: false } }
+      }
+    }
+  });
+
+  /* Tipo de trabajo doughnut */
+  new Chart(document.getElementById('tipoChart'), {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [175, 137, 15, 6, 1],
+        backgroundColor: ['#c94e2e','#1e4fa8','#e8a020','#1a7a50','#b4b2a9'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+
+<script>
+const TICKETS = [{"ID del ticket": 17183, "Asunto": "PF PLANTA PIZZA INSTALACION DE CCTV Y 2 CONTROLES DE ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "06/01/2025", "Tiempo transcurrido": "242:52"}, {"ID del ticket": 17189, "Asunto": "Mall Plaza Maule: Instalacion de camaras", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "juan toledo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "06/01/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 17203, "Asunto": "RETIRO CCTV ANALOGO PF3", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "06/01/2025", "Tiempo transcurrido": "04:18"}, {"ID del ticket": 17217, "Asunto": "Municipalidad Talca: Instalación de antenas", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Municipalidad Talca", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "07/01/2025", "Tiempo transcurrido": "19:45"}, {"ID del ticket": 17220, "Asunto": "Mall Plaza Maule: Instalación de antenas Maule express", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "07/01/2025", "Tiempo transcurrido": "18:48"}, {"ID del ticket": 17227, "Asunto": "Colegio Integrado. Instalación de 7 nuevas cámaras", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COLEGIO INTEGRADO", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "07/01/2025", "Tiempo transcurrido": "18:39"}, {"ID del ticket": 17345, "Asunto": "Mall Plaza Maule: Revisión pc Susana Ayala", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Mantenimiento Preventiva", "Hora de creación": "10/01/2025", "Tiempo transcurrido": "03:26"}, {"ID del ticket": 17514, "Asunto": "PF PLANTA 2 Puesta en marcha DE CAMARAS DE PRODUCCION", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Configuración", "Hora de creación": "15/01/2025", "Tiempo transcurrido": "00:17"}, {"ID del ticket": 17520, "Asunto": "PF PLANTA 1 ALARMAS GERENCIA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Preventiva", "Hora de creación": "16/01/2025", "Tiempo transcurrido": "00:02"}, {"ID del ticket": 17535, "Asunto": "PF PLANTA 2 PUESTA EN MARCHA DE 2 CONTROLES DE ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "16/01/2025", "Tiempo transcurrido": "00:05"}, {"ID del ticket": 17538, "Asunto": "PF TEMUCO INSTALACION DE 13 CAMARAS DE SEGURIDAD", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "16/01/2025", "Tiempo transcurrido": "18:00"}, {"ID del ticket": 17541, "Asunto": "Mall Plaza Maule: Instalación de fibra", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "16/01/2025", "Tiempo transcurrido": "00:60"}, {"ID del ticket": 17551, "Asunto": "PF INSTALACION DE CITOFONO EN ASCENSOR PLANTA PIZZA ZIPPER", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "16/01/2025", "Tiempo transcurrido": "01:05"}, {"ID del ticket": 17587, "Asunto": "PF PLANTA 2 Mejora en puerta acceso vestuario Colaboradores 3 controles de acceso", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "16/01/2025", "Tiempo transcurrido": "21:08"}, {"ID del ticket": 17593, "Asunto": "PF PLANTA 1 INSTALACION DE CÁMARA PASILLO ACCESO A ROPERÍA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "17/01/2025", "Tiempo transcurrido": "01:16"}, {"ID del ticket": 17713, "Asunto": "Mall Plaza Maule: Instalación de cámara en ascensor", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "21/01/2025", "Tiempo transcurrido": "00:09"}, {"ID del ticket": 17769, "Asunto": "Mall Plaza Maule: configuración antena nanobem 5AC", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Configuración", "Hora de creación": "23/01/2025", "Tiempo transcurrido": "00:17"}, {"ID del ticket": 17867, "Asunto": "Municipalidad Talca: Preparación de antenas", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Municipalidad Talca", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Configuración", "Hora de creación": "27/01/2025", "Tiempo transcurrido": "15:05"}, {"ID del ticket": 17878, "Asunto": "PF SANTIAGO SAN BERNANDO CAMARA SIN IMAGEN", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "28/01/2025", "Tiempo transcurrido": "00:34"}, {"ID del ticket": 17972, "Asunto": "Copec 20094 - Problema enchufes e interruptores", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COPEC", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "30/01/2025", "Tiempo transcurrido": "26:34"}, {"ID del ticket": 17987, "Asunto": "Linares: Instalación de equipo mikrotik y wifi Ubiquity", "Estado": "Closed", "Prioridad": "High", "Empresa": "—", "Agente": "José Espinoza", "Grupo": "informático(tecnico)", "Tipo de trabajo": "—", "Hora de creación": "30/01/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 17988, "Asunto": "PF PLANTA 2 - ESTACIONAMIENTO SINDICATO PROBLEMA EN ENLACE UBIQUITI", "Estado": "Closed", "Prioridad": "High", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "30/01/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 17998, "Asunto": "Mall Plaza Maule: Instalar 3 camaras segundo piso", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "30/01/2025", "Tiempo transcurrido": "10:00"}, {"ID del ticket": 18025, "Asunto": "Mall Plaza Maule: Migración de cámaras", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Configuración", "Hora de creación": "03/02/2025", "Tiempo transcurrido": "03:35"}, {"ID del ticket": 18067, "Asunto": "PF Planta 1, sector bodega de cartones", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "03/02/2025", "Tiempo transcurrido": "45:42"}, {"ID del ticket": 18123, "Asunto": "PF SANTIAGO LOBOSA ALARMA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "—", "Agente": "Julian Casanova Perez", "Grupo": "CCTV P.F (tecnico)", "Tipo de trabajo": "—", "Hora de creación": "04/02/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 18159, "Asunto": "PF PLANTA 3 PUESTA EN MARCHA DE CAMARAS IP", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "05/02/2025", "Tiempo transcurrido": "37:34"}, {"ID del ticket": 18162, "Asunto": "Mall Plaza Maule: Cámara casino", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "05/02/2025", "Tiempo transcurrido": "16:34"}, {"ID del ticket": 18204, "Asunto": "PF CHILLAN CAMARA N14 CON INTERMITENCIA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "06/02/2025", "Tiempo transcurrido": "00:04"}, {"ID del ticket": 18285, "Asunto": "PF PLANTA 2 Puerta norte emergencia frigorífico", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "10/02/2025", "Tiempo transcurrido": "00:10"}, {"ID del ticket": 18298, "Asunto": "PF PLANTA PIZZA INSTALACION DE CITOFONIA EN MONTACARGA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "10/02/2025", "Tiempo transcurrido": "00:05"}, {"ID del ticket": 18307, "Asunto": "PF CHILLAN MANTENCION PREVENTIVA Y CHECK LIST", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Preventiva", "Hora de creación": "10/02/2025", "Tiempo transcurrido": "00:34"}, {"ID del ticket": 18334, "Asunto": "GERMANI ESTACIONAMIENTO TALCA CAMARA SIN IMAGEN Y LEVANTAMIENTO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Germani", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "11/02/2025", "Tiempo transcurrido": "00:32"}, {"ID del ticket": 18345, "Asunto": "MINERA PAICAVI INSTALACION DE 2 CAMARAS IP Y ENLACE DE RED", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Minera Paicavi SA", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "11/02/2025", "Tiempo transcurrido": "00:22"}, {"ID del ticket": 18398, "Asunto": "P.F : Reparación bombas de agua", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Gerencia P.F", "Agente": "juan toledo", "Grupo": "Electricidad", "Tipo de trabajo": "Instalacion", "Hora de creación": "13/02/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 18412, "Asunto": "CASA LUIS NEBREDA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "TOLEDOS", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "13/02/2025", "Tiempo transcurrido": "01:48"}, {"ID del ticket": 18489, "Asunto": "PIPAU: Mantenimiento a sistema de CCTV", "Estado": "Closed", "Prioridad": "Low", "Empresa": "PIPAU", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Preventiva", "Hora de creación": "17/02/2025", "Tiempo transcurrido": "00:02"}, {"ID del ticket": 18510, "Asunto": "CASA MARIA INES INSTALACION DE STARLINK", "Estado": "Closed", "Prioridad": "Low", "Empresa": "TIGERO", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "17/02/2025", "Tiempo transcurrido": "00:06"}, {"ID del ticket": 18517, "Asunto": "San Bernando Solicita controles del botón de pánico.", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "17/02/2025", "Tiempo transcurrido": "17:22"}, {"ID del ticket": 18529, "Asunto": "Santa Fidelmira. Instalación de bomba de condensado.", "Estado": "Closed", "Prioridad": "Low", "Empresa": "SANTA FIDELMIRA", "Agente": "William Padron", "Grupo": "Electricidad", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "18/02/2025", "Tiempo transcurrido": "18:36"}, {"ID del ticket": 18534, "Asunto": "Colegio Andes. Revisión de falla eléctrica en un sector", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COLEGIO ANDES", "Agente": "William Padron", "Grupo": "Electricidad", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "18/02/2025", "Tiempo transcurrido": "02:22"}, {"ID del ticket": 18578, "Asunto": "Colegio Andes. Instalacion de puntos de Red y Modificaciones", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COLEGIO ANDES", "Agente": "William Padron", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "19/02/2025", "Tiempo transcurrido": "16:36"}, {"ID del ticket": 18791, "Asunto": "PF PLANTA 2 MIGRACION DE 10 CONTROLES DE ACCESO A ASI2212", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "26/02/2025", "Tiempo transcurrido": "16:46"}, {"ID del ticket": 18801, "Asunto": "PF COMPLEJO INDUSTRIAL MIGRACION DE CONTROLES ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "26/02/2025", "Tiempo transcurrido": "01:40"}, {"ID del ticket": 18855, "Asunto": "Casa Sergio Talca", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Gerencia P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "27/02/2025", "Tiempo transcurrido": "03:34"}, {"ID del ticket": 18857, "Asunto": "Colegio Montessori Normalizacion de camaras en entrada Jardin", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COLEGIO MONTESSORI", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "27/02/2025", "Tiempo transcurrido": "22:12"}, {"ID del ticket": 18862, "Asunto": "COLEGIO INTEGRADO: Canalización de cables de red y hdmi", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COLEGIO INTEGRADO", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "27/02/2025", "Tiempo transcurrido": "00:05"}, {"ID del ticket": 18895, "Asunto": "CDS SANTIAGO CAMARA SIN IMAGEN", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "28/02/2025", "Tiempo transcurrido": "00:03"}, {"ID del ticket": 18918, "Asunto": "PTZ Sector Constructota DLP Sin Imagen", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "03/03/2025", "Tiempo transcurrido": "73:04"}, {"ID del ticket": 19048, "Asunto": "PF LOMBRIFILTRO RETIRO DE CAMARAS", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "05/03/2025", "Tiempo transcurrido": "08:29"}, {"ID del ticket": 19064, "Asunto": "PF PLANTA 2 Magneto galería 7 oriente", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Preventiva", "Hora de creación": "05/03/2025", "Tiempo transcurrido": "30:27"}, {"ID del ticket": 19080, "Asunto": "PF PLANTA 3 instalacion de nvr", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "05/03/2025", "Tiempo transcurrido": "65:39"}, {"ID del ticket": 19101, "Asunto": "PF EDIFICIO MANTENCION PROBLEMA EN BOTONES DE SALIDA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "06/03/2025", "Tiempo transcurrido": "00:02"}, {"ID del ticket": 19106, "Asunto": "PF PLANTA 1 ALARMA CONTABILIDAD", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "06/03/2025", "Tiempo transcurrido": "00:16"}, {"ID del ticket": 19135, "Asunto": "TPL CASA CAMPO DON JOSE INSTALACION DE 10 CCTV", "Estado": "Closed", "Prioridad": "Low", "Empresa": "TPL", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "07/03/2025", "Tiempo transcurrido": "75:55"}, {"ID del ticket": 19177, "Asunto": "PF PLANTA 2 Barrera acceso portería Frigorífico", "Estado": "Closed", "Prioridad": "Urgent", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "10/03/2025", "Tiempo transcurrido": "02:12"}, {"ID del ticket": 19288, "Asunto": "CASA SRA CAROLA CONTRUCTORA INDEPENDENCIA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "TOLEDOS", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "13/03/2025", "Tiempo transcurrido": "00:05"}, {"ID del ticket": 19342, "Asunto": "Santa Fidelmira. Casa Erick Waghon Hijo. Inst. de malla protección", "Estado": "Closed", "Prioridad": "Low", "Empresa": "SANTA FIDELMIRA", "Agente": "William Padron", "Grupo": "Electricidad", "Tipo de trabajo": "Instalacion", "Hora de creación": "13/03/2025", "Tiempo transcurrido": "72:28"}, {"ID del ticket": 19348, "Asunto": "PF CALDERA INSTALACIÓN DE 1 CAMARA TÉRMICA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "13/03/2025", "Tiempo transcurrido": "41:01"}, {"ID del ticket": 19362, "Asunto": "Mall Florida GO: Instalación de AP", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Florida GO", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "14/03/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 19505, "Asunto": "PF PLANTA 1 INSTALACION DE TORNIQUETE EN PEDILUVIO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "19/03/2025", "Tiempo transcurrido": "64:06"}, {"ID del ticket": 19725, "Asunto": "Colegio Andes. Reemplazo de pila a botón de pánico", "Estado": "Closed", "Prioridad": "Low", "Empresa": "COLEGIO ANDES", "Agente": "William Padron", "Grupo": "Electricidad", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "25/03/2025", "Tiempo transcurrido": "01:40"}, {"ID del ticket": 19745, "Asunto": "PF PLANTA 3 INSTALACION DE NVR", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "26/03/2025", "Tiempo transcurrido": "00:28"}, {"ID del ticket": 19868, "Asunto": "PF P2 INSTALACION DE UN CONTROL DE ACCESO VERSTUARIO SUPERVISORES", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "28/03/2025", "Tiempo transcurrido": "11:52"}, {"ID del ticket": 19907, "Asunto": "Gerencia P.F: Instalación de CCTV", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Gerencia P.F", "Agente": "juan toledo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "29/03/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 19974, "Asunto": "PF PLANTA 2 REINSTALACION DE 2 CAMARAS EN PRODUCCION", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "01/04/2025", "Tiempo transcurrido": "00:10"}, {"ID del ticket": 19977, "Asunto": "PF PUESTA EN MARCHA SANTA MARGARITA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "01/04/2025", "Tiempo transcurrido": "00:01"}, {"ID del ticket": 19980, "Asunto": "PF CDS RENCA Reparacion de control de acceso y boton de salida", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "01/04/2025", "Tiempo transcurrido": "00:01"}, {"ID del ticket": 19986, "Asunto": "PF CDS RENCA PASILLO N29 CONGELADO SIN IMAGEN", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "01/04/2025", "Tiempo transcurrido": "15:55"}, {"ID del ticket": 20044, "Asunto": "municipalidad Talca: Antenas", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Municipalidad Talca", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "03/04/2025", "Tiempo transcurrido": "00:16"}, {"ID del ticket": 20155, "Asunto": "Mall Plaza Maule: Rack Sala eléctrica n2 piso -1 (Contadores)", "Estado": "Closed", "Prioridad": "Urgent", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "07/04/2025", "Tiempo transcurrido": "21:24"}, {"ID del ticket": 20211, "Asunto": "PF PLANTA 2 INSTALACION DE 19 CCTV Y 1 CONTROL DE ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F.", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "08/04/2025", "Tiempo transcurrido": "118:32"}, {"ID del ticket": 20226, "Asunto": "PF CDT INSTALACION DE 2 CONTROLES ACCESO EN SAIL", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "08/04/2025", "Tiempo transcurrido": "23:28"}, {"ID del ticket": 20242, "Asunto": "Camaras de vigilancia nueva oficina Linares", "Estado": "Closed", "Prioridad": "Low", "Empresa": "TPL", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Instalacion", "Hora de creación": "09/04/2025", "Tiempo transcurrido": "39:40"}, {"ID del ticket": 20451, "Asunto": "PF CDT 2 CAMARAS SIN IMAGEN", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "15/04/2025", "Tiempo transcurrido": "47:40"}, {"ID del ticket": 20679, "Asunto": "PF PLANTA 3 INSTALACION DE 8 CCTV", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "23/04/2025", "Tiempo transcurrido": "31:15"}, {"ID del ticket": 20848, "Asunto": "Compactador de basura con problemas", "Estado": "Closed", "Prioridad": "Urgent", "Empresa": "Mall Plaza Maule", "Agente": "William Padron", "Grupo": "Electricidad", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "28/04/2025", "Tiempo transcurrido": "00:00"}, {"ID del ticket": 21221, "Asunto": "Mall Plaza Maule: Retiro de cables sobrantes", "Estado": "Closed", "Prioridad": "Urgent", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "08/05/2025", "Tiempo transcurrido": "01:12"}, {"ID del ticket": 21329, "Asunto": "Instalación de control de acceso oficina de reuniones", "Estado": "Closed", "Prioridad": "Urgent", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "12/05/2025", "Tiempo transcurrido": "01:03"}, {"ID del ticket": 21427, "Asunto": "PF PLANTA 1 INSTALACION DE DSS EN SAIL PRINCIPAL", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "13/05/2025", "Tiempo transcurrido": "00:22"}, {"ID del ticket": 21870, "Asunto": "PF PLANTA 6 INSTALACION DE SISTEMAS DE SEGURIDAD CAMARAS Y CONTROLES", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "27/05/2025", "Tiempo transcurrido": "09:11"}, {"ID del ticket": 22020, "Asunto": "PF CONCON INSTALACION DE 5 PUNTOS DE RED", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "29/05/2025", "Tiempo transcurrido": "87:40"}, {"ID del ticket": 22454, "Asunto": "PF CDT CAMARA SIN IMAGEN 29 ANDEN 8-11", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "09/06/2025", "Tiempo transcurrido": "109:49"}, {"ID del ticket": 22633, "Asunto": "PF PLANTA 2 Galería técnica 1.", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "13/06/2025", "Tiempo transcurrido": "47:36"}, {"ID del ticket": 22747, "Asunto": "PF PLANTA 1 reparación de control de acceso oficina de auditoria interna", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "17/06/2025", "Tiempo transcurrido": "48:30"}, {"ID del ticket": 23281, "Asunto": "PF PLANTA 2 FRIGORIFICO BARRERAS Lectores de tarjeta no funciona", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "03/07/2025", "Tiempo transcurrido": "86:11"}, {"ID del ticket": 23283, "Asunto": "mall plaza Maule: normalizar tablero", "Estado": "Closed", "Prioridad": "Low", "Empresa": "Mall Plaza Maule", "Agente": "David Castillo", "Grupo": "Informática", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "04/07/2025", "Tiempo transcurrido": "85:08"}, {"ID del ticket": 24170, "Asunto": "PF PUERTO MONTT INSTALACION DE CCTV, CONTROLES DE ACCESO Y CITOFONIA", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "25/07/2025", "Tiempo transcurrido": "82:21"}, {"ID del ticket": 24389, "Asunto": "PF RANCAGUA INSTALACION DE 2 AP Y PUNTOS DE RED", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "31/07/2025", "Tiempo transcurrido": "82:28"}, {"ID del ticket": 24623, "Asunto": "PF PLANTA 1 Puntos a instalar controles de acceso", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F.", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "06/08/2025", "Tiempo transcurrido": "36:31"}, {"ID del ticket": 24647, "Asunto": "PF PLANTA 6 RACK EXTERIOR CAMARA SIN IMAGENES", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "06/08/2025", "Tiempo transcurrido": "39:43"}, {"ID del ticket": 25469, "Asunto": "PF CHILLAN CAMARA N5 ENFRIADO SIN IMAGEN", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "28/08/2025", "Tiempo transcurrido": "43:05"}, {"ID del ticket": 26264, "Asunto": "PF TEMUCO INSTALACION DE CONTROL ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "17/09/2025", "Tiempo transcurrido": "119:33"}, {"ID del ticket": 26413, "Asunto": "PF TEMUCO INSTALACION DE PUNTOS DE RED", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "24/09/2025", "Tiempo transcurrido": "111:34"}, {"ID del ticket": 27075, "Asunto": "CDT CONTROL DE ACCESO SUELTO HACER RETIRO y REINSTALACION", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "07/10/2025", "Tiempo transcurrido": "45:34"}, {"ID del ticket": 27468, "Asunto": "PF CDT SAIL PRINCIPAL 2 PUNTOS DE RED PARA CONTROLES DE ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "16/10/2025", "Tiempo transcurrido": "52:57"}, {"ID del ticket": 27577, "Asunto": "PF RENCA CAMARA CON INTERMITENCIAS", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "20/10/2025", "Tiempo transcurrido": "16:49"}, {"ID del ticket": 27982, "Asunto": "PF PLANTA 3 REVISION DE PUNTOS DE RED LINEA HCU324", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "30/10/2025", "Tiempo transcurrido": "94:00"}, {"ID del ticket": 28077, "Asunto": "PF PLANTA 4 PROYECTO AMPLIACION INSTALACION CCTV Y CA", "Estado": "Open", "Prioridad": "Low", "Empresa": "P.F.", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "03/11/2025", "Tiempo transcurrido": "91:31"}, {"ID del ticket": 28408, "Asunto": "PF INSTALACION DE PUNTOS DE RED PARA 19 CCTV Y 5 CONTROLES DE ACCESO", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F.", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "11/11/2025", "Tiempo transcurrido": "81:32"}, {"ID del ticket": 28552, "Asunto": "PF CDT Solicitud huellero vestuario colaboradoras", "Estado": "Closed", "Prioridad": "Low", "Empresa": "P.F", "Agente": "Emanuel Flores", "Grupo": "CCTV", "Tipo de trabajo": "Instalacion", "Hora de creación": "14/11/2025", "Tiempo transcurrido": "197:24"}, {"ID del ticket": 30529, "Asunto": "TEPUAL Cámara estacionamiento trasero", "Estado": "Closed", "Prioridad": "Low", "Empresa": "INCOSA", "Agente": "juan toledo", "Grupo": "CCTV", "Tipo de trabajo": "Mantenimiento Correctiva", "Hora de creación": "31/12/2025", "Tiempo transcurrido": "00:00"}];
+
+let sortAsc = true;
+let sortField = 'id';
+
+function estadoBadge(e) {
+  if (e === 'Open') return '<span style="background:#fcebeb;color:#a32d2d;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:2px;font-weight:500;">Open</span>';
+  return '<span style="background:#eaf3de;color:#27500a;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:2px;">Closed</span>';
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('ticketBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:2rem; text-align:center; color:#7a7a7a; font-style:italic;">Sin resultados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((t, i) => `
+    <tr style="border-bottom:1px solid rgba(14,14,14,0.07); background:${i%2===0?'var(--paper)':'var(--paper-2)'}; ${t['Estado']==='Open'?'outline:2px solid #c94e2e;':''}">
+      <td style="padding:9px 14px; font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--ink); white-space:nowrap;">#${t['ID del ticket']}</td>
+      <td style="padding:9px 14px; color:var(--ink-2); max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${t['Asunto']}">${t['Asunto']}</td>
+      <td style="padding:9px 14px; white-space:nowrap;">${estadoBadge(t['Estado'])}</td>
+      <td style="padding:9px 14px; color:var(--ink-2); white-space:nowrap; font-size:11px;">${t['Empresa']||'—'}</td>
+      <td style="padding:9px 14px; color:var(--ink-2); white-space:nowrap; font-size:11px;">${t['Agente']||'—'}</td>
+      <td style="padding:9px 14px; color:var(--ink-3); white-space:nowrap; font-size:11px;">${t['Grupo']||'—'}</td>
+      <td style="padding:9px 14px; font-family:var(--font-mono); font-size:11px; color:var(--ink-3); white-space:nowrap;">${t['Hora de creación']}</td>
+    </tr>`).join('');
+}
+
+function filterTickets() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const est = document.getElementById('filterEstado').value;
+  const grp = document.getElementById('filterGrupo').value;
+  let filtered = TICKETS.filter(t => {
+    const matchQ = !q || String(t['ID del ticket']).includes(q) || (t['Asunto']||'').toLowerCase().includes(q) || (t['Empresa']||'').toLowerCase().includes(q);
+    const matchE = !est || t['Estado'] === est;
+    const matchG = !grp || t['Grupo'] === grp;
+    return matchQ && matchE && matchG;
+  });
+  document.getElementById('resultCount').textContent = filtered.length + ' resultado' + (filtered.length !== 1 ? 's' : '');
+  renderTable(filtered);
+}
+
+function sortTable(field) {
+  sortAsc = sortField === field ? !sortAsc : true;
+  sortField = field;
+  TICKETS.sort((a,b) => {
+    const va = field === 'id' ? a['ID del ticket'] : a['Hora de creación'];
+    const vb = field === 'id' ? b['ID del ticket'] : b['Hora de creación'];
+    return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+  filterTickets();
+}
+
+function toggleTickets() {
+  const panel = document.getElementById('ticketPanel');
+  const arrow = document.getElementById('ticketArrow');
+  const isOpen = panel.style.display !== 'none';
+  if (isOpen) {
+    panel.style.display = 'none';
+    arrow.style.transform = 'rotate(0deg)';
+  } else {
+    panel.style.display = 'block';
+    arrow.style.transform = 'rotate(180deg)';
+    if (!document.getElementById('ticketBody').innerHTML) {
+      renderTable(TICKETS);
+      document.getElementById('resultCount').textContent = TICKETS.length + ' resultados';
+    }
+  }
+}
+</script>
+</body>
+</html>
